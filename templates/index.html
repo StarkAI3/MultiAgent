@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Multi-Agent Development System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-robot text-primary me-2"></i>
+                Multi-Agent Development Dashboard
+            </h1>
+            <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create New Project
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Agent Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card agent-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-code fa-2x me-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">Software Developer Agent</h5>
+                        <p class="card-text mb-2">Creates high-quality, production-ready code</p>
+                        <div class="d-flex align-items-center">
+                            <span class="status-indicator status-online"></span>
+                            <small>Ready to develop</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card agent-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-search fa-2x me-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">Code Reviewer Agent</h5>
+                        <p class="card-text mb-2">Ensures code quality and best practices</p>
+                        <div class="d-flex align-items-center">
+                            <span class="status-indicator status-online"></span>
+                            <small>Ready to review</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('create_project') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-plus-circle fa-2x mb-2"></i>
+                            <span>New Project</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('projects') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-folder-open fa-2x mb-2"></i>
+                            <span>View Projects</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('status') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <span>System Status</span>
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button onclick="runExample()" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-play-circle fa-2x mb-2"></i>
+                            <span>Run Example</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Projects -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Projects
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="recent-projects">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                        <p>Loading recent projects...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Templates -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Project Templates
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card project-template-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-globe text-primary me-2"></i>
+                                    Web Application
+                                </h6>
+                                <p class="card-text small">Create a full-stack web application with modern frameworks</p>
+                                <button onclick="useTemplate('web-app')" class="btn btn-sm btn-primary">Use Template</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card project-template-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-chart-bar text-success me-2"></i>
+                                    Data Science
+                                </h6>
+                                <p class="card-text small">Build a machine learning pipeline with data processing</p>
+                                <button onclick="useTemplate('data-science')" class="btn btn-sm btn-success">Use Template</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card project-template-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-mobile-alt text-warning me-2"></i>
+                                    API Service
+                                </h6>
+                                <p class="card-text small">Develop a RESTful API with authentication and documentation</p>
+                                <button onclick="useTemplate('api-service')" class="btn btn-sm btn-warning">Use Template</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load recent projects
+function loadRecentProjects() {
+    fetch('/api/projects')
+        .then(response => response.json())
+        .then(projects => {
+            const container = document.getElementById('recent-projects');
+            
+            if (projects.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-folder-open fa-2x mb-2"></i>
+                        <p>No projects yet. Create your first project!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const recentProjects = projects.slice(0, 5); // Show last 5 projects
+            container.innerHTML = recentProjects.map(project => `
+                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <div>
+                        <h6 class="mb-1">${project.project_name}</h6>
+                        <small class="text-muted">${project.timestamp}</small>
+                    </div>
+                    <a href="/project/${project.project_name}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('Error loading projects:', error);
+            document.getElementById('recent-projects').innerHTML = `
+                <div class="text-center text-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p>Error loading projects</p>
+                </div>
+            `;
+        });
+}
+
+// Run example project
+function runExample() {
+    showLoading();
+    fetch('/api/run-example', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                showNotification('Example project started!', 'success');
+            } else {
+                showNotification('Error running example: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Error running example', 'error');
+        });
+}
+
+// Use project template
+function useTemplate(templateType) {
+    const templates = {
+        'web-app': 'Create a modern web application using Flask/FastAPI with React frontend, user authentication, database integration, and responsive design',
+        'data-science': 'Build a machine learning pipeline that loads data from CSV files, preprocesses it, trains a model, and provides prediction endpoints with visualization',
+        'api-service': 'Develop a RESTful API service with JWT authentication, database integration, input validation, comprehensive documentation, and unit tests'
+    };
+    
+    const requirements = templates[templateType];
+    if (requirements) {
+        // Store in session storage and redirect to create project
+        sessionStorage.setItem('projectRequirements', requirements);
+        window.location.href = '/create_project';
+    }
+}
+
+// Load projects on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadRecentProjects();
+    
+    // Check if we have stored requirements
+    const storedRequirements = sessionStorage.getItem('projectRequirements');
+    if (storedRequirements) {
+        document.getElementById('project-requirements').value = storedRequirements;
+        sessionStorage.removeItem('projectRequirements');
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}System Status - Multi-Agent Development System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-chart-line text-primary me-2"></i>
+                System Status
+            </h1>
+            <button onclick="refreshStatus()" class="btn btn-outline-primary">
+                <i class="fas fa-sync-alt me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- System Overview -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-server me-2"></i>System Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-robot fa-2x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Multi-Agent System</h6>
+                                <div class="d-flex align-items-center">
+                                    <span class="status-indicator {% if status.mas_initialized %}status-online{% else %}status-offline{% endif %}"></span>
+                                    <small>{% if status.mas_initialized %}Online{% else %}Offline{% endif %}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-brain fa-2x text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">AI Model</h6>
+                                <small class="text-muted">{{ status.model }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-folder fa-2x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Projects Created</h6>
+                                <small class="text-muted">{{ status.projects_count }} projects</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-hdd fa-2x text-info"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">Storage</h6>
+                                <small class="text-muted">{{ status.output_dir }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Agent Status -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Agent Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card agent-status-card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-code fa-2x text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Software Developer</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="status-indicator status-online"></span>
+                                            <small class="text-success">Ready</small>
+                                        </div>
+                                        <small class="text-muted">Creates high-quality code</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card agent-status-card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-search fa-2x text-success"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Code Reviewer</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="status-indicator status-online"></span>
+                                            <small class="text-success">Ready</small>
+                                        </div>
+                                        <small class="text-muted">Ensures code quality</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Quick Stats
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Total Projects</span>
+                    <span class="badge bg-primary">{{ status.projects_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>System Status</span>
+                    <span class="badge {% if status.mas_initialized %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if status.mas_initialized %}Online{% else %}Offline{% endif %}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Model</span>
+                    <span class="badge bg-secondary">{{ status.model }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Workspace</span>
+                    <span class="badge bg-info">{{ status.workspace_dir }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Health -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-heartbeat me-2"></i>System Health
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>CPU Usage</small>
+                        <small id="cpu-usage">--</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" id="cpu-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>Memory Usage</small>
+                        <small id="memory-usage">--</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" id="memory-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>Disk Usage</small>
+                        <small id="disk-usage">--</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-info" id="disk-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <small class="text-muted">Last updated: <span id="last-update">--</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function refreshStatus() {
+    // Simulate refreshing system stats
+    updateSystemStats();
+}
+
+function updateSystemStats() {
+    // Simulate system stats (in a real app, these would come from the server)
+    const cpuUsage = Math.floor(Math.random() * 100);
+    const memoryUsage = Math.floor(Math.random() * 100);
+    const diskUsage = Math.floor(Math.random() * 100);
+    
+    document.getElementById('cpu-usage').textContent = cpuUsage + '%';
+    document.getElementById('cpu-bar').style.width = cpuUsage + '%';
+    
+    document.getElementById('memory-usage').textContent = memoryUsage + '%';
+    document.getElementById('memory-bar').style.width = memoryUsage + '%';
+    
+    document.getElementById('disk-usage').textContent = diskUsage + '%';
+    document.getElementById('disk-bar').style.width = diskUsage + '%';
+    
+    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+}
+
+// Update stats every 30 seconds
+setInterval(updateSystemStats, 30000);
+
+// Initial update
+updateSystemStats();
+</script>
+{% endblock %} 

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Project - Multi-Agent Development System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h2 mb-0">
+                <i class="fas fa-plus-circle text-primary me-2"></i>
+                Create New Project
+            </h1>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Project Requirements
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="project-form">
+                    <div class="mb-3">
+                        <label for="project_name" class="form-label">
+                            <i class="fas fa-tag me-1"></i>Project Name (Optional)
+                        </label>
+                        <input type="text" class="form-control" id="project_name" name="project_name" 
+                               placeholder="e.g., my_web_app, data_analyzer, api_service">
+                        <div class="form-text">Leave empty for auto-generated name</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="project-requirements" class="form-label">
+                            <i class="fas fa-file-alt me-1"></i>Project Requirements
+                        </label>
+                        <textarea class="form-control" id="project-requirements" name="requirements" 
+                                  rows="12" placeholder="Describe your project requirements in detail...&#10;&#10;Example:&#10;Create a Python web application that:&#10;1. Has user authentication with JWT tokens&#10;2. Provides a RESTful API for data management&#10;3. Includes a modern frontend with React&#10;4. Uses PostgreSQL for data storage&#10;5. Includes comprehensive testing and documentation&#10;6. Has Docker configuration for deployment" required></textarea>
+                        <div class="form-text">Be as detailed as possible for better results</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                            <i class="fas fa-eraser me-2"></i>Clear Form
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            <i class="fas fa-rocket me-2"></i>Create Project
+                            <span class="loading-spinner ms-2">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Quick Templates -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Quick Templates
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="useTemplate('web-app')">
+                        <i class="fas fa-globe me-2"></i>Web Application
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="useTemplate('data-science')">
+                        <i class="fas fa-chart-bar me-2"></i>Data Science
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="useTemplate('api-service')">
+                        <i class="fas fa-mobile-alt me-2"></i>API Service
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="useTemplate('automation')">
+                        <i class="fas fa-cogs me-2"></i>Automation Script
+                    </button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" onclick="useTemplate('game')">
+                        <i class="fas fa-gamepad me-2"></i>Simple Game
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Writing Tips
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Be specific about features
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Mention technologies you prefer
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Include performance requirements
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Specify security needs
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Mention testing requirements
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Status Modal -->
+<div class="modal fade" id="projectStatusModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-cog fa-spin me-2"></i>Project Creation Status
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="status-messages">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Initializing project creation...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Project templates
+const templates = {
+    'web-app': `Create a modern web application with the following features:
+1. Frontend: React.js with responsive design and modern UI components
+2. Backend: Flask/FastAPI with RESTful API endpoints
+3. Database: PostgreSQL with SQLAlchemy ORM
+4. Authentication: JWT-based user authentication and authorization
+5. Features: User registration, login, dashboard, CRUD operations
+6. Styling: Bootstrap or Tailwind CSS for responsive design
+7. Testing: Unit tests for both frontend and backend
+8. Documentation: API documentation with Swagger/OpenAPI
+9. Deployment: Docker configuration and deployment instructions
+10. Security: Input validation, SQL injection prevention, XSS protection
+
+The application should follow best practices for code organization, error handling, and performance optimization.`,
+
+    'data-science': `Build a comprehensive machine learning pipeline with the following components:
+1. Data Loading: Support for CSV, JSON, and Excel files
+2. Data Preprocessing: Cleaning, normalization, feature engineering
+3. Model Training: Multiple algorithms (Random Forest, SVM, Neural Networks)
+4. Model Evaluation: Cross-validation, metrics calculation, confusion matrix
+5. Visualization: Interactive charts using Plotly or Matplotlib
+6. API Endpoints: RESTful API for model predictions
+7. Web Interface: Streamlit or Flask web app for user interaction
+8. Model Persistence: Save and load trained models
+9. Configuration: YAML/JSON config files for parameters
+10. Testing: Unit tests for data processing and model training
+
+Include comprehensive documentation and example usage.`,
+
+    'api-service': `Develop a production-ready RESTful API service with:
+1. Framework: FastAPI with automatic API documentation
+2. Authentication: JWT tokens with refresh mechanism
+3. Database: PostgreSQL with async SQLAlchemy
+4. Validation: Pydantic models for request/response validation
+5. Rate Limiting: Implement rate limiting to prevent abuse
+6. Logging: Structured logging with different levels
+7. Error Handling: Comprehensive error responses with proper HTTP codes
+8. Testing: Unit tests, integration tests, and API tests
+9. Documentation: Auto-generated OpenAPI/Swagger documentation
+10. Security: CORS, input sanitization, SQL injection prevention
+11. Monitoring: Health check endpoints and metrics
+12. Deployment: Docker configuration and CI/CD pipeline
+
+Focus on scalability, security, and maintainability.`,
+
+    'automation': `Create a Python automation script that:
+1. Task: Monitor system resources (CPU, memory, disk usage)
+2. Data Collection: Gather metrics at regular intervals
+3. Storage: Save data to CSV or database
+4. Analysis: Generate reports and identify trends
+5. Alerts: Send notifications when thresholds are exceeded
+6. Configuration: Configurable parameters via config file
+7. Logging: Comprehensive logging with rotation
+8. Scheduling: Run automatically using cron or scheduler
+9. Web Dashboard: Simple web interface to view results
+10. Testing: Unit tests for core functionality
+
+Make it robust, configurable, and production-ready.`,
+
+    'game': `Develop a simple but engaging game with:
+1. Game Type: Text-based adventure or simple 2D game
+2. Graphics: Use Pygame or similar library for visuals
+3. Gameplay: Multiple levels with increasing difficulty
+4. Scoring: Point system and high score tracking
+5. Sound: Background music and sound effects
+6. Save/Load: Persist game state between sessions
+7. Menu System: Main menu, pause, settings
+8. Controls: Keyboard/mouse input handling
+9. Animation: Smooth animations and transitions
+10. Documentation: Clear instructions and game rules
+
+Focus on fun gameplay and smooth user experience.`
+};
+
+// Use template
+function useTemplate(templateType) {
+    const requirements = templates[templateType];
+    if (requirements) {
+        document.getElementById('project-requirements').value = requirements;
+        document.getElementById('project-requirements').focus();
+    }
+}
+
+// Clear form
+function clearForm() {
+    document.getElementById('project-form').reset();
+}
+
+// Handle form submission
+document.getElementById('project-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('submit-btn');
+    const loadingSpinner = submitBtn.querySelector('.loading-spinner');
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    loadingSpinner.style.display = 'inline-block';
+    
+    // Submit form
+    this.submit();
+});
+
+// Check for stored requirements on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const storedRequirements = sessionStorage.getItem('projectRequirements');
+    if (storedRequirements) {
+        document.getElementById('project-requirements').value = storedRequirements;
+        sessionStorage.removeItem('projectRequirements');
+    }
+});
+
+// Socket.IO event handlers
+socket.on('project_status', function(data) {
+    const statusMessages = document.getElementById('status-messages');
+    
+    let alertClass = 'info';
+    let icon = 'info-circle';
+    
+    if (data.status === 'started') {
+        alertClass = 'info';
+        icon = 'cog';
+    } else if (data.status === 'completed') {
+        alertClass = 'success';
+        icon = 'check-circle';
+    } else if (data.status === 'error') {
+        alertClass = 'danger';
+        icon = 'exclamation-triangle';
+    }
+    
+    const messageHtml = `
+        <div class="alert alert-${alertClass}">
+            <i class="fas fa-${icon} me-2"></i>
+            ${data.message}
+        </div>
+    `;
+    
+    statusMessages.innerHTML = messageHtml;
+    
+    // Show modal for status updates
+    const modal = new bootstrap.Modal(document.getElementById('projectStatusModal'));
+    modal.show();
+    
+    // Hide loading state
+    const submitBtn = document.getElementById('submit-btn');
+    const loadingSpinner = submitBtn.querySelector('.loading-spinner');
+    submitBtn.disabled = false;
+    loadingSpinner.style.display = 'none';
+});
+</script>
+{% endblock %} 

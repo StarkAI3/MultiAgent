@@ -1,0 +1,8 @@
+# Ollama Configuration
+OLLAMA_BASE_URL=http://localhost:11434
+MODEL_NAME=gemma3:latest
+
+# Optional: Custom model parameters
+# TEMPERATURE=0.1
+# TOP_P=0.9
+# MAX_TOKENS=4096 
