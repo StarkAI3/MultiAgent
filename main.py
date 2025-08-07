@@ -23,10 +23,13 @@ def main():
         help="Name for the project (optional)"
     )
     
+    parser.add_argument('--delete-project', type=str, 
+                       help='Delete a specific project by name')
+    
     parser.add_argument(
         "--list-projects",
         action="store_true",
-        help="List all completed projects"
+        help="List all projects"
     )
     
     parser.add_argument(
@@ -55,14 +58,28 @@ def main():
     
     # Handle different commands
     if args.create_project:
-        print("\n" + "="*50)
+        print("=" * 50)
         print("🚀 CREATING NEW PROJECT")
-        print("="*50)
-        
+        print("=" * 50)
         result = mas.create_project(args.create_project, args.project_name)
         print(f"\n✅ Project created successfully!")
         print(f"📁 Project directory: {result['project_dir']}")
-        
+    
+    elif args.delete_project:
+        print("=" * 50)
+        print("🗑️ DELETING PROJECT")
+        print("=" * 50)
+        try:
+            success = mas.delete_project(args.delete_project)
+            if success:
+                print(f"✅ Project '{args.delete_project}' deleted successfully!")
+            else:
+                print(f"❌ Failed to delete project '{args.delete_project}'")
+        except FileNotFoundError:
+            print(f"❌ Project '{args.delete_project}' not found")
+        except Exception as e:
+            print(f"❌ Error deleting project: {e}")
+    
     elif args.list_projects:
         print("\n" + "="*50)
         print("📋 COMPLETED PROJECTS")

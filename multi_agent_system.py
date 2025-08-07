@@ -107,51 +107,125 @@ class MultiAgentSystem:
     
     def _extract_code_files(self, project_dir: str, result: str):
         """Extract code files from the result and save them properly"""
+        # First, try to extract Python code specifically
+        python_code = self._extract_python_code(result)
+        if python_code:
+            with open(os.path.join(project_dir, 'main.py'), 'w') as f:
+                f.write(python_code)
+            print(f"📄 Saved: main.py")
+        
+        # Extract README content
+        readme_content = self._extract_readme_content(result)
+        if readme_content:
+            with open(os.path.join(project_dir, 'README.md'), 'w') as f:
+                f.write(readme_content)
+            print(f"📄 Saved: README.md")
+        
+        # Extract requirements.txt if mentioned
+        requirements_content = self._extract_requirements_content(result)
+        if requirements_content:
+            with open(os.path.join(project_dir, 'requirements.txt'), 'w') as f:
+                f.write(requirements_content)
+            print(f"📄 Saved: requirements.txt")
+        
+        # If no Python code was extracted, create a basic implementation
+        if not os.path.exists(os.path.join(project_dir, 'main.py')):
+            self._create_basic_implementation(project_dir, result)
+    
+    def _extract_python_code(self, result: str) -> str:
+        """Extract Python code from the agent output"""
         lines = result.split('\n')
-        current_file = None
-        current_content = []
-        in_code_block = False
+        in_python_block = False
+        python_code = []
         
         for line in lines:
-            # Look for code block markers
-            if '```' in line:
-                if in_code_block:
-                    # End of code block
-                    if current_file and current_content:
-                        self._save_code_file(project_dir, current_file, current_content)
-                    current_file = None
-                    current_content = []
-                    in_code_block = False
-                else:
-                    # Start of code block
-                    in_code_block = True
-                    # Try to extract filename from the line
-                    if 'python' in line.lower() or '.py' in line:
-                        current_file = 'main.py'
-                    elif 'markdown' in line.lower() or 'md' in line:
-                        current_file = 'README.md'
-                    elif 'javascript' in line.lower() or '.js' in line:
-                        current_file = 'app.js'
-                    elif 'html' in line.lower() or '.html' in line:
-                        current_file = 'index.html'
-                    elif 'css' in line.lower() or '.css' in line:
-                        current_file = 'style.css'
-                    elif 'json' in line.lower() or '.json' in line:
-                        current_file = 'config.json'
-                    elif 'yaml' in line.lower() or '.yml' in line:
-                        current_file = 'config.yml'
-                    elif 'docker' in line.lower() or 'dockerfile' in line:
-                        current_file = 'Dockerfile'
-                    elif 'requirements' in line.lower() or 'dependencies' in line:
-                        current_file = 'requirements.txt'
-                    else:
-                        current_file = 'code.txt'
-            elif in_code_block and current_file:
-                current_content.append(line)
+            if '```python' in line:
+                in_python_block = True
+                continue
+            elif '```' in line and in_python_block:
+                in_python_block = False
+                break
+            elif in_python_block:
+                python_code.append(line)
         
-        # Save any remaining code block
-        if current_file and current_content:
-            self._save_code_file(project_dir, current_file, current_content)
+        return '\n'.join(python_code) if python_code else ""
+    
+    def _extract_readme_content(self, result: str) -> str:
+        """Extract README content from the agent output"""
+        lines = result.split('\n')
+        in_markdown_block = False
+        readme_content = []
+        
+        for line in lines:
+            if '```markdown' in line:
+                in_markdown_block = True
+                continue
+            elif '```' in line and in_markdown_block:
+                in_markdown_block = False
+                break
+            elif in_markdown_block:
+                readme_content.append(line)
+        
+        return '\n'.join(readme_content) if readme_content else ""
+    
+    def _extract_requirements_content(self, result: str) -> str:
+        """Extract requirements.txt content from the agent output"""
+        lines = result.split('\n')
+        in_requirements_block = False
+        requirements_content = []
+        
+        for line in lines:
+            if '```text' in line and 'requirements' in line.lower():
+                in_requirements_block = True
+                continue
+            elif '```' in line and in_requirements_block:
+                in_requirements_block = False
+                break
+            elif in_requirements_block:
+                requirements_content.append(line)
+        
+        return '\n'.join(requirements_content) if requirements_content else ""
+    
+    def _create_basic_implementation(self, project_dir: str, result: str):
+        """Create a basic implementation if no code was extracted"""
+        # Extract project name from directory
+        project_name = os.path.basename(project_dir)
+        
+        # Create a basic Python implementation
+        basic_code = f'''"""
+{project_name} - Basic Implementation
+Generated by Multi-Agent Software Development System
+"""
+
+def main():
+    """Main function for {project_name}"""
+    print(f"Welcome to {{project_name}}!")
+    print("This is a basic implementation generated by the Multi-Agent System.")
+    print("Please review the requirements and implement the full functionality.")
+    
+    # TODO: Implement the actual functionality based on requirements
+    # TODO: Add proper error handling
+    # TODO: Add input validation
+    # TODO: Add comprehensive documentation
+    
+    return True
+
+if __name__ == "__main__":
+    main()
+'''
+        
+        with open(os.path.join(project_dir, 'main.py'), 'w') as f:
+            f.write(basic_code)
+        
+        print(f"📄 Created basic implementation: main.py")
+        
+        # Create a requirements.txt if it doesn't exist
+        requirements_file = os.path.join(project_dir, 'requirements.txt')
+        if not os.path.exists(requirements_file):
+            with open(requirements_file, 'w') as f:
+                f.write("# Basic requirements for the project\n")
+                f.write("# Add specific dependencies as needed\n")
+            print(f"📄 Created: requirements.txt")
     
     def _save_code_file(self, project_dir: str, filename: str, content: List[str]):
         """Save a code file to the project directory"""
@@ -258,4 +332,21 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             "result": result,
             "files": files,
             "project_dir": project_dir
-        } 
+        }
+    
+    def delete_project(self, project_name: str) -> bool:
+        """Delete a project from the file system"""
+        project_dir = os.path.join(self.output_dir, project_name)
+        
+        if not os.path.exists(project_dir):
+            raise FileNotFoundError(f"Project '{project_name}' not found")
+        
+        try:
+            # Remove the entire project directory and all its contents
+            import shutil
+            shutil.rmtree(project_dir)
+            print(f"🗑️ Deleted project: {project_name}")
+            return True
+        except Exception as e:
+            print(f"❌ Error deleting project {project_name}: {e}")
+            return False 

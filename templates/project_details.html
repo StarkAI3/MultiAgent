@@ -99,6 +99,9 @@
                     <button class="btn btn-outline-info btn-sm" onclick="openProjectFolder()">
                         <i class="fas fa-folder-open me-2"></i>Open Folder
                     </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteProject()">
+                        <i class="fas fa-trash me-2"></i>Delete Project
+                    </button>
                 </div>
             </div>
         </div>
@@ -290,6 +293,48 @@ function openProjectFolder() {
     const projectDir = `{{ details.metadata.project_dir }}`;
     // In a real implementation, this would open the folder in the file explorer
     showNotification(`Project folder: ${projectDir}`, 'info');
+}
+
+function deleteProject() {
+    const projectName = '{{ project_name }}';
+    
+    // Use a simple confirm dialog instead of complex modal to avoid conflicts
+    if (confirm(`Are you sure you want to delete the project "${projectName}"?\n\nThis action cannot be undone. All project files will be permanently deleted.`)) {
+        // Show loading state
+        const deleteBtn = document.querySelector('button[onclick="deleteProject()"]');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+        deleteBtn.disabled = true;
+        
+        // Make DELETE request
+        fetch(`/api/project/${projectName}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                // Success - redirect to projects page
+                showNotification(data.message, 'success');
+                setTimeout(() => {
+                    window.location.href = '/projects';
+                }, 1000);
+            } else {
+                // Error
+                showNotification(data.error || 'Failed to delete project', 'error');
+                deleteBtn.innerHTML = originalText;
+                deleteBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Failed to delete project', 'error');
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        });
+    }
 }
 </script>
 {% endblock %} 

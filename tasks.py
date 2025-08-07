@@ -21,6 +21,8 @@ class TaskFactory:
             
             Project: {project_name}
             
+            CRITICAL: You MUST generate actual working code files, not just documentation.
+            
             Please:
             1. Analyze the requirements thoroughly
             2. Design a proper architecture
@@ -29,9 +31,33 @@ class TaskFactory:
             5. Add comprehensive comments
             6. Follow best practices for the chosen technology stack
             7. Create a README.md with setup and usage instructions
+            
+            IMPORTANT OUTPUT REQUIREMENTS:
+            - Generate the main code file (e.g., main.py, app.py, index.js, etc.)
+            - Include all necessary imports and dependencies
+            - Make the code immediately runnable
+            - Provide clear usage examples
+            - Include proper error handling and validation
+            
+            Your response should include:
+            1. The main code file with complete implementation
+            2. Any additional files needed (requirements.txt, config files, etc.)
+            3. A comprehensive README.md with setup instructions
+            4. Usage examples and documentation
+            
+            Format your response with proper code blocks:
+            ```python
+            # Your Python code here
+            ```
+            
+            ```markdown
+            # Your README content here
+            ```
+            
+            Make sure the code is complete and can be run immediately!
             """,
             agent=agent,
-            expected_output=config['expected_output']
+            expected_output="Complete, working code files with proper structure, error handling, and documentation"
         )
     
     @staticmethod
@@ -56,7 +82,8 @@ class TaskFactory:
             8. Testing recommendations
             
             Be thorough and constructive in your feedback.
+            Focus on the actual code implementation, not just documentation.
             """,
             agent=agent,
-            expected_output=config['expected_output']
+            expected_output="Detailed code review with specific suggestions and improvements"
         ) 

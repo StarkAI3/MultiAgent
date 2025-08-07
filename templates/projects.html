@@ -7,7 +7,7 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2 mb-0">
-                <i class="fas fa-folder text-primary me-2"></i>
+                <i class="fas fa-folder-open text-primary me-2"></i>
                 Projects
             </h1>
             <a href="{{ url_for('create_project') }}" class="btn btn-primary">
@@ -18,54 +18,266 @@
 </div>
 
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="fas fa-list me-2"></i>All Projects
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if projects %}
-                    <div class="row">
-                        {% for project in projects %}
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card project-card h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h6 class="card-title mb-0">{{ project.project_name }}</h6>
-                                        <span class="badge bg-primary">{{ project.model_used }}</span>
-                                    </div>
-                                    <p class="card-text small text-muted mb-3">
-                                        {{ project.requirements[:100] }}{% if project.requirements|length > 100 %}...{% endif %}
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar me-1"></i>
-                                            {{ project.timestamp[:10] }}
-                                        </small>
-                                        <a href="{{ url_for('project_details', project_name=project.project_name) }}" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye me-1"></i>View
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    {% if projects %}
+        {% for project in projects %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card h-100 project-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-folder text-warning me-2"></i>
+                        {{ project.project_name }}
+                    </h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('project_details', project_name=project.project_name) }}">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteProject('{{ project.project_name }}')">
+                                <i class="fas fa-trash me-2"></i>Delete Project
+                            </a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="simpleDeleteProject('{{ project.project_name }}')">
+                                <i class="fas fa-trash-alt me-2"></i>Delete (Simple)
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ project.timestamp[:10] if project.timestamp != 'Unknown' else 'Unknown' }}
+                        </small>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">{{ project.model_used }}</span>
+                        {% for agent in project.agents %}
+                            <span class="badge bg-success">{{ agent }}</span>
                         {% endfor %}
                     </div>
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No projects yet</h5>
-                        <p class="text-muted">Create your first project to get started!</p>
-                        <a href="{{ url_for('create_project') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Create Project
-                        </a>
-                    </div>
-                {% endif %}
+                    <p class="card-text small text-muted">
+                        {{ project.requirements[:100] }}{% if project.requirements|length > 100 %}...{% endif %}
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('project_details', project_name=project.project_name) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>View Project
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No projects found</h4>
+                <p class="text-muted">Create your first project to get started!</p>
+                <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create New Project
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the project <strong id="deleteProjectName"></strong>?</p>
+                <p class="text-danger small">
+                    <i class="fas fa-warning me-1"></i>
+                    This action cannot be undone. All project files will be permanently deleted.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>Delete Project
+                </button>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let projectToDelete = null;
+let deleteModal = null;
+
+// Initialize modal when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing delete modal...');
+    
+    try {
+        deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'), {
+            backdrop: 'static', // Prevent closing by clicking outside
+            keyboard: false     // Prevent closing with escape key
+        });
+        
+        // Add event listener to confirm delete button
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', confirmDelete);
+            console.log('Confirm delete button event listener added');
+        }
+        
+        // Handle modal hidden event to reset state
+        const modalElement = document.getElementById('deleteModal');
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            console.log('Modal hidden, resetting state');
+            projectToDelete = null;
+            const deleteBtn = document.getElementById('confirmDeleteBtn');
+            if (deleteBtn) {
+                deleteBtn.innerHTML = '<i class="fas fa-trash me-2"></i>Delete Project';
+                deleteBtn.disabled = false;
+            }
+        });
+        
+        console.log('Delete modal initialized successfully');
+    } catch (error) {
+        console.error('Error initializing delete modal:', error);
+    }
+});
+
+function deleteProject(projectName) {
+    console.log('deleteProject called with:', projectName);
+    projectToDelete = projectName;
+    document.getElementById('deleteProjectName').textContent = projectName;
+    
+    if (deleteModal) {
+        console.log('Showing delete modal...');
+        deleteModal.show();
+    } else {
+        console.error('Delete modal not initialized, using simple delete');
+        simpleDeleteProject(projectName);
+    }
+}
+
+function confirmDelete() {
+    console.log('confirmDelete called, projectToDelete:', projectToDelete);
+    if (!projectToDelete) {
+        console.error('No project to delete');
+        return;
+    }
+    
+    // Show loading state
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+    deleteBtn.disabled = true;
+    
+    console.log('Making DELETE request for project:', projectToDelete);
+    
+    // Make DELETE request
+    fetch(`/api/project/${projectToDelete}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        console.log('Delete response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Delete response data:', data);
+        if (data.message) {
+            // Success - close modal and refresh page
+            console.log('Delete successful, closing modal and refreshing');
+            deleteModal.hide();
+            showNotification(data.message, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // Error
+            console.error('Delete failed:', data.error);
+            showNotification(data.error || 'Failed to delete project', 'error');
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Delete request error:', error);
+        showNotification('Failed to delete project', 'error');
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
+    });
+}
+
+// Simple delete function that doesn't use modals
+function simpleDeleteProject(projectName) {
+    console.log('simpleDeleteProject called with:', projectName);
+    
+    if (confirm(`Are you sure you want to delete the project "${projectName}"?\n\nThis action cannot be undone. All project files will be permanently deleted.`)) {
+        console.log('User confirmed deletion');
+        
+        // Show loading notification
+        showNotification('Deleting project...', 'info');
+        
+        console.log('Making DELETE request for project:', projectName);
+        
+        // Make DELETE request
+        fetch(`/api/project/${projectName}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            console.log('Simple delete response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Simple delete response data:', data);
+            if (data.message) {
+                // Success - refresh page
+                console.log('Simple delete successful, refreshing page');
+                showNotification(data.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                // Error
+                console.error('Simple delete failed:', data.error);
+                showNotification(data.error || 'Failed to delete project', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Simple delete request error:', error);
+            showNotification('Failed to delete project', 'error');
+        });
+    } else {
+        console.log('User cancelled deletion');
+    }
+}
+
+// Auto-refresh projects list every 30 seconds
+setInterval(() => {
+    // Only refresh if we're on the projects page and no modal is open
+    if (document.getElementById('deleteModal').classList.contains('show')) return;
+    
+    fetch('/api/projects')
+        .then(response => response.json())
+        .then(data => {
+            // Update the projects list if needed
+            // This is a simple implementation - you could make it more sophisticated
+        })
+        .catch(error => console.error('Error refreshing projects:', error));
+}, 30000);
+</script>
 {% endblock %} 

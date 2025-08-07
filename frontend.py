@@ -110,12 +110,26 @@ def api_projects():
 
 @app.route('/api/project/<project_name>')
 def api_project_details(project_name):
-    """API endpoint to get project details"""
+    """Get project details as JSON"""
     try:
         details = mas.get_project_details(project_name)
         return jsonify(details)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 404
+
+@app.route('/api/project/<project_name>/delete', methods=['DELETE'])
+def api_delete_project(project_name):
+    """Delete a project"""
+    try:
+        success = mas.delete_project(project_name)
+        if success:
+            return jsonify({"message": f"Project '{project_name}' deleted successfully"}), 200
+        else:
+            return jsonify({"error": f"Failed to delete project '{project_name}'"}), 500
+    except FileNotFoundError:
+        return jsonify({"error": f"Project '{project_name}' not found"}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error deleting project: {str(e)}"}), 500
 
 @app.route('/api/run-example', methods=['POST'])
 def api_run_example():
